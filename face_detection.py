@@ -9,7 +9,6 @@ def cascade_init(path):
 def detect_face_on_frame_with_haar(grayFrame, faceCascade, scaleFactor, minNeighbours, minSize, flags):
     return faceCascade.detectMultiScale(grayFrame, scaleFactor, minNeighbours, flags, minSize)
 
-
 if __name__ == '__main__':
     camera = camera.default_webcamera(1280, 960)
     cascade = cascade_init("haarcascade_frontalface_default.xml")
