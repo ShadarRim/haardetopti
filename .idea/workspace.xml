@@ -3,7 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="88695708-0f31-4a3d-ad24-b636216c88f4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/face_detection.py" beforeDir="false" afterPath="$PROJECT_DIR$/face_detection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/face_base_read.py" beforeDir="false" afterPath="$PROJECT_DIR$/face_base_read.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/face_det_compare.py" beforeDir="false" afterPath="$PROJECT_DIR$/face_det_compare.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
