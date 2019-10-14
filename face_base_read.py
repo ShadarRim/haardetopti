@@ -1,7 +1,7 @@
 import cv2, os
 
 def lfw_discription(path):
-    pathDiscription = f'{path}/FDDB-folds2'
+    pathDiscription = f'{path}/FDDB-folds'
     return pathDiscription
 
 #0 - rectangles
