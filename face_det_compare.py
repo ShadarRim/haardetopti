@@ -1,5 +1,14 @@
 import cv2, numpy, time
 import face_detection, face_base_read
+import csv,os
+
+def csv_writer(path, cowsNames, data):
+    with open(path, "w", newline='') as outFile:
+        writer = csv.DictWriter(outFile, delimiter=';', fieldnames=cowsNames)
+        writer.writeheader()
+        for row in data:
+            writer.writerow(row)
+
 
 def rect_squre(w, h):
     if w < 0 or h < 0:
@@ -108,14 +117,28 @@ def oneIteration(cascade, count, scale = 1.01, minNeighbours = 3):
     return timeFin, tpCount, fpCount, tnCount, doubleTPCount
 
 if __name__ == '__main__':
-    faceBaseSize = 100
+
+    data = []
+    fieldNames = ['faceBaseSize', 'scale', 'minNeighbours', 'timePerFrame', 'tp', 'fp', 'tn', 'double']
     cascade = face_detection.cascade_init("haarcascade_frontalface_default.xml")
-    minNeighbours = 1
-    while minNeighbours < 6:
-        scale = 1.05
-        while scale < 2:
-            timeFin, tpCount, fpCount, tnCount, doubleTPCount = oneIteration(cascade, faceBaseSize, scale, minNeighbours)
-            print(f'Параметры: Scale {scale} MinNeighbours {minNeighbours} - Результаты: время {timeFin} ms per frame, tp {tpCount} fp {fpCount} tn {tnCount} double {doubleTPCount}')
-            scale += 0.05
-            scale = round(scale, 2)
-        minNeighbours += 1
+    faceBaseSize = 10
+    while faceBaseSize < 600:
+        minNeighbours = 1
+        while minNeighbours < 2:
+            scale = 1.05
+            while scale < 2:
+                timeFin, tpCount, fpCount, tnCount, doubleTPCount = oneIteration(cascade, faceBaseSize, scale, minNeighbours)
+                print(f'Параметры: Scale {scale} MinNeighbours {minNeighbours} - Результаты: время {timeFin} ms per frame, tp {tpCount} fp {fpCount} tn {tnCount} double {doubleTPCount}')
+                data.append([faceBaseSize, scale, minNeighbours, timeFin, tpCount, fpCount, tnCount, doubleTPCount])
+                scale += 0.05
+                scale = round(scale, 2)
+            minNeighbours += 1
+        faceBaseSize += 500
+
+    tmp_list = []
+    for values in data:
+        inner_dict = dict(zip(fieldNames, values))
+        tmp_list.append(inner_dict)
+
+    path = "test.csv"
+    csv_writer(path, fieldNames, tmp_list)

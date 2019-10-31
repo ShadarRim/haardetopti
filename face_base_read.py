@@ -7,6 +7,7 @@ def lfw_discription(path):
 #0 - rectangles
 #1 - ellipses
 def get_lfv_images_base(type = 0, debug = 0):
+    curDir = os.getcwd()
     os.chdir(lfw_discription("../"))
     fileDiscrPath = os.getcwd()
 
@@ -68,6 +69,8 @@ def get_lfv_images_base(type = 0, debug = 0):
 
     if debug:
         cv2.destroyAllWindows()
+
+    os.chdir(curDir)
     return fullNames, fullDiscriptions
 
 if __name__ == '__main__':
