@@ -18,17 +18,7 @@ def rects_compare(x1,y1,w1,h1,x2,y2,w2,h2):
     topInside = max(y1,y2)
     bottomInside = min(y1+h1,y2+h2)
 
-    #print(f'out rect: {leftOut} {topOut} {rightOut} {bottomOut}')
-    #print(f'in rect: {leftInside} {topInside} {rightInside} {bottomInside}')
-    #print(f'sq coef {rect_squre(rightInside-leftInside,bottomInside-topInside)/rect_squre(rightOut-leftOut,bottomOut-topOut)}')
-
     return rect_squre(rightInside-leftInside,bottomInside-topInside)/rect_squre(rightOut-leftOut,bottomOut-topOut)
-
-    #outSqure = rect_squre(rightOut-leftOut,bottomOut-topOut)
-    #insideSqure = rect_squre(rightInside-leftInside,bottomInside-topInside)
-
-    #print(f'{outSqure} {insideSqure}')
-    #return lqeftOut, topOut, rightOut, bottomOut, leftInside, topInside, rightInside, bottomInside
 
 
 def countPos(row, value=0.0):
@@ -57,11 +47,10 @@ def situationCount(tab, found):
             if countPos(cow) - countPos(cow,0.5) > 0:
                 fp += countPos(cow) - countPos(cow,0.5)
     tn = objectsForFind - tp
-    #print(f'Найдено объектов {foundObjects}, необходимо было найти {objectsForFind}')
     return tp, tn, fp,  foundObjects, objectsForFind, doubleTP
 
 
-def oneIteration(cascade, scale = 1.01):
+def oneIteration(cascade, count, scale = 1.01, minNeighbours = 3):
     imagePathes, discr = face_base_read.get_lfv_images_base()
     tpCount = 0
     tnCount = 0
@@ -72,17 +61,20 @@ def oneIteration(cascade, scale = 1.01):
 
     allTime = time.time()
 
-    for i in range(0, len(imagePathes)):
+    maxFaceBaseLen = count
+    if count > len(imagePathes):
+        maxFaceBaseLen = len(imagePathes)
+
+    for i in range(0, maxFaceBaseLen):
         frame = cv2.imread(imagePathes[i])
-        grayFrame = frame[:, :, :]
-        grayFrame = cv2.cvtColor(grayFrame, cv2.COLOR_BGR2GRAY)
+        grayFrame = cv2.cvtColor(frame[:, :], cv2.COLOR_BGR2GRAY)
 
         for rect in discr[i]:
             topLeft = (rect[0], rect[1])
             downRight = (rect[0] + rect[2], rect[1] + rect[3])
             cv2.rectangle(frame, topLeft, downRight, (255, 0, 0), 2)
 
-        foundFaces = face_detection.detect_face_on_frame_with_haar(grayFrame, cascade, scale, 3, (30, 30), cv2.CASCADE_SCALE_IMAGE)
+        foundFaces = face_detection.detect_face_on_frame_with_haar(grayFrame, cascade, scale, minNeighbours, (30, 30), cv2.CASCADE_SCALE_IMAGE)
 
         tabX = [0] * len(discr[i])
         tab = [0] * len(foundFaces)
@@ -95,9 +87,7 @@ def oneIteration(cascade, scale = 1.01):
             n = 0
             for rect in discr[i]:
                 tab[m][n] = rects_compare(x, y, w, h, rect[0], rect[1], rect[2], rect[3])
-                # print(f'Параметры двух изображений с номером {n} {m}: {x,y,w,h,rect[0],rect[1],rect[2],rect[3]}. Результат равен {tab[m][n]}')
                 n += 1
-            # print(f'весь ряд: {tab[m]}')
             m += 1
 
         found = True
@@ -106,8 +96,6 @@ def oneIteration(cascade, scale = 1.01):
             tab = [0] * len(tabX)
             found = False
 
-        #print(f'{i} из {len(imagePathes)} результат {tab}')
-
         tpSt, tnSt, fpSt, foundSt, forFindSt, doubleTPSt = situationCount(tab, found)
         tpCount += tpSt
         tnCount += tnSt
@@ -115,21 +103,19 @@ def oneIteration(cascade, scale = 1.01):
         foundCount += foundSt
         forFindCount += forFindSt
         doubleTPCount += doubleTPSt
-        # print(f'{tpSt} {foundSt} {forFindSt} {doubleTPSt}')
-        # print(f'{tpCount} {foundCount} {forFindCount} {doubleTPCount}')
-
-        # cv2.imshow("frame", frame)
-        # cv2.waitKey(1)
 
     timeFin = round((time.time() - allTime) / len(imagePathes) * 1000, 4)
-    #print(f'Верно найдено {tpCount}, неверно найденные {fpCount}, нейнайденные {tnCount},  требовалось найти {forFindCount}, найдено {foundCount}, двойных срабатываний {doubleTPCount}')
-    #print(f'Время: {timeFin} ms per frame, tp {tpCount} fp {fpCount} tn {tnCount} double {doubleTPCount}')
     return timeFin, tpCount, fpCount, tnCount, doubleTPCount
 
 if __name__ == '__main__':
+    faceBaseSize = 100
     cascade = face_detection.cascade_init("haarcascade_frontalface_default.xml")
-    scale = 1.05
-    while scale < 2:
-        timeFin, tpCount, fpCount, tnCount, doubleTPCount = oneIteration(cascade, scale)
-        print(f'Параметры: Scale {scale} - Результаты: время {timeFin} ms per frame, tp {tpCount} fp {fpCount} tn {tnCount} double {doubleTPCount}')
-        scale += 0.05
+    minNeighbours = 1
+    while minNeighbours < 6:
+        scale = 1.05
+        while scale < 2:
+            timeFin, tpCount, fpCount, tnCount, doubleTPCount = oneIteration(cascade, faceBaseSize, scale, minNeighbours)
+            print(f'Параметры: Scale {scale} MinNeighbours {minNeighbours} - Результаты: время {timeFin} ms per frame, tp {tpCount} fp {fpCount} tn {tnCount} double {doubleTPCount}')
+            scale += 0.05
+            scale = round(scale, 2)
+        minNeighbours += 1

@@ -22,8 +22,7 @@ if __name__ == '__main__':
         ret, frame = camera.read()
         if not ret:
             break
-        grayFrame = frame[:, :, :]
-        cv2.cvtColor(grayFrame, cv2.COLOR_BGR2GRAY)
+        grayFrame = cv2.cvtColor(frame[:, :], cv2.COLOR_BGR2GRAY)
 
         faces = detect_face_on_frame_with_haar(grayFrame, cascade, 1.4, 3, (30, 30), cv2.CASCADE_SCALE_IMAGE)
 
